@@ -1,52 +1,24 @@
-# ===== Stage 1: Builder =====
-FROM node:18-bullseye-slim AS builder
+# Stage 1: Clone và build nginx-proxy-manager từ source
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
-# Cài gói cần thiết để clone + build + certbot plugin
-RUN apt-get update && \
-    apt-get install -y \
-        git \
-        python3-pip \
-        python3-dev \
-        build-essential \
-        libffi-dev \
-        libssl-dev \
-        rustc \
-        sqlite3 \
-        sudo && \
-    pip3 install --upgrade pip && \
-    pip3 install certbot certbot-dns-cloudflare && \
-    apt-get clean
+RUN apk add --no-cache git python3 py3-pip make gcc g++ linux-headers
 
-# Clone source code NPM
-RUN git clone --depth 1 https://github.com/NginxProxyManager/nginx-proxy-manager.git . && \
-    npm install --omit=dev
+# Clone source
+RUN git clone --depth=1 https://github.com/NginxProxyManager/nginx-proxy-manager.git .
 
-# ===== Stage 2: Runtime =====
-FROM node:18-slim
+# Cài đặt dependencies
+RUN cd backend && npm install && npm run build
 
-WORKDIR /app
+# Stage 2: Final image từ Alpine + NPM + Cloudflare support
+FROM jc21/nginx-proxy-manager:latest
 
-# Cài pip và certbot plugin ở runtime
-RUN apt-get update && \
-    apt-get install -y \
-        python3-pip \
-        libffi-dev \
-        libssl-dev \
-        rustc \
-        sqlite3 \
-        sudo && \
-    pip3 install --upgrade pip && \
-    pip3 install certbot certbot-dns-cloudflare && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Cài thêm pip và cloudflare
+RUN apk add --no-cache python3 py3-pip build-base libffi-dev openssl-dev \
+    && pip3 install certbot certbot-dns-cloudflare \
+    && mkdir -p /etc/letsencrypt
 
-# Copy từ builder stage
-COPY --from=builder /app /app
-
-# Mở port
-EXPOSE 80 81 443
-
-# Chạy app
-CMD ["node", "index.js"]
+# (Optional) Copy cấu hình Cloudflare credentials nếu bạn dùng
+# COPY ./cloudflare.ini /etc/letsencrypt/cloudflare.ini
+# RUN chmod 600 /etc/letsencrypt/cloudflare.ini
