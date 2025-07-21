@@ -1,13 +1,22 @@
-# Use a specific version of the base image
-FROM jc21/nginx-proxy-manager:2.9.16
+FROM jc21/nginx-proxy-manager:latest
 
-# Switch to root user to install dependencies
-USER root
+# Cài đặt pip và certbot-dns-cloudflare
+RUN apk add --no-cache \
+    py3-pip \
+    python3-dev \
+    build-base \
+    libffi-dev \
+    openssl-dev \
+    && pip3 install --upgrade pip \
+    && pip3 install certbot-dns-cloudflare \
+    && apk del build-base python3-dev libffi-dev openssl-dev
 
-# Install Python and Certbot Cloudflare plugin
-RUN apk add --no-cache py3-pip \
-  && pip install certbot-dns-cloudflare \
-  && rm -rf /var/cache/apk/*
+# Copy script khởi tạo tùy chỉnh (nếu cần)
+# COPY custom-entrypoint.sh /custom-entrypoint.sh
+# RUN chmod +x /custom-entrypoint.sh
 
-# Switch back to the non-root user
-USER node
+# Expose ports
+EXPOSE 80 443 81
+
+# Sử dụng entrypoint gốc
+ENTRYPOINT ["/usr/bin/entry.sh"]
