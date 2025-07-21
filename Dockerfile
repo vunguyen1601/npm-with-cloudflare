@@ -15,8 +15,7 @@ RUN cd backend && npm install && npm run build
 FROM jc21/nginx-proxy-manager:latest
 
 # Cài thêm pip và cloudflare
-RUN apk add --no-cache python3 py3-pip build-base libffi-dev openssl-dev \
-    && pip3 install certbot certbot-dns-cloudflare \
+RUN pip install certbot certbot-dns-cloudflare \
     && mkdir -p /etc/letsencrypt
 
 # (Optional) Copy cấu hình Cloudflare credentials nếu bạn dùng
