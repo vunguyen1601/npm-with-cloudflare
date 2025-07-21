@@ -1,18 +1,13 @@
 FROM jc21/nginx-proxy-manager:latest
 
 # Cài đặt pip và certbot-dns-cloudflare
-RUN apk update && apk add --no-cache \
-    py3-pip \
-    python3-dev \
-    build-base \
-    libffi-dev \
-    openssl-dev \
-    rust \
-    cargo \
-    && pip3 install --upgrade pip \
-    && pip3 install certbot-dns-cloudflare \
-    && apk del build-base python3-dev libffi-dev openssl-dev rust cargo \
-    && rm -rf /var/cache/apk/*
+RUN apt-get update && \
+        apt-get install -y python3-pip python3-dev build-essential libffi-dev libssl-dev && \
+        pip3 install --upgrade pip && \
+        pip3 install certbot-dns-cloudflare && \
+        apt-get remove -y python3-dev build-essential libffi-dev libssl-dev && \
+        apt-get autoremove -y && \
+        apt-get clean;
 
 # Expose ports
 EXPOSE 80 443 81
