@@ -2,7 +2,9 @@ FROM jc21/nginx-proxy-manager:latest
 
 USER root
 
-RUN apk add --no-cache py3-pip \
-  && pip install certbot-dns-cloudflare
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    pip3 install certbot-dns-cloudflare && \
+    apt-get clean
 
 USER node
