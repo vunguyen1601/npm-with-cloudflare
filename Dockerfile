@@ -1,5 +1,5 @@
 # Stage 1: Clone và build nginx-proxy-manager từ source
-FROM node:18-alpine as builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN cd backend && npm install && npm run build
 FROM jc21/nginx-proxy-manager:latest
 
 # Cài thêm pip và cloudflare
-RUN pip install certbot certbot-dns-cloudflare \
+RUN pip3 install certbot certbot-dns-cloudflare \
     && mkdir -p /etc/letsencrypt
 
 # (Optional) Copy cấu hình Cloudflare credentials nếu bạn dùng
