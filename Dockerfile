@@ -1,8 +1,3 @@
-FROM jc21/nginx-proxy-manager:latest
-
-USER root
-
-RUN apk add --no-cache py3-pip \
-  && pip install certbot-dns-cloudflare
+FROM vunt/nginx-proxy-manager-custom:latest
 
 USER node
